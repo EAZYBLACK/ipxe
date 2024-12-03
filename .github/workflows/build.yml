@@ -3,6 +3,26 @@ name: Build
 on: workflow_dispatch
 
 jobs:
+  cache:
+    name: Cache
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Cache permissions
+        run: |
+          sudo chown $(id -un) /var/cache/apt/archives
+      - name: Cache packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives/*.deb
+          key: apt-cache-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            apt-cache-
+      - name: Download packages
+        run: |
+          sudo apt update
+          sudo apt install -y -d -o Acquire::Retries=50 \
+                           mtools syslinux isolinux \
+                           libc6-dev-i386 valgrind
   x86:
     name: x86
     runs-on: ubuntu-22.04
